@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vente Joven Los Taques - Formulario de Inscripción</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            slate: '#133148',    // Gris Pizarra Sombrío
+                            sapphire: '#003399', // Azul Zafiro Profundo
+                            light: '#1DB3E7',    // Azul Claro
+                            bg: '#F4F8FA',       // Fondo suave
+                        },
+                        status: {
+                            contacted: '#059669', // Verde Esmeralda (Contactado)
+                            noresponse: '#E65100', // Rojo Cobre/Anaranjado Intenso (Sin Respuesta - Distinto de eliminar)
+                            danger: '#DC2626',     // Rojo Carmesí (Eliminar)
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F8FA;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .gradient-header {
+            background: linear-gradient(135deg, #133148 0%, #003399 60%, #1DB3E7 100%);
+        }
+        .active-tab {
+            border-bottom: 3px solid #1DB3E7;
+            color: #003399;
+            font-weight: 700;
+        }
+        .inactive-tab {
+            color: #64748B;
+            font-weight: 500;
+        }
+        .inactive-tab:hover {
+            color: #133148;
+        }
+        .badge-pending {
+            background-color: #E2E8F0;
+            color: #475569;
+        }
+        .badge-contacted {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        .badge-noresponse {
+            background-color: #FFEDD5;
+            color: #9A3412;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800 antialiased selection:bg-brand-light selection:text-white pb-12">
+
+    <header class="gradient-header text-white shadow-lg sticky top-0 z-20">
+        <div class="max-w-3xl mx-auto px-4 py-5 text-center">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-sm">
+                Vente Joven Los Taques
+            </h1>
+            <p class="text-xs sm:text-sm font-medium text-blue-100 mt-1 uppercase tracking-wider opacity-90">
+                Formulario de inscripción
+            </p>
+        </div>
+    </header>
+
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[73px] z-10">
+        <div class="max-w-3xl mx-auto flex">
+            <button id="tab-form-btn" onclick="switchTab('form')" class="flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 active-tab">
+                <i class="fa-solid fa-user-plus text-base"></i>
+                <span>Formulario</span>
+            </button>
+            <button id="tab-list-btn" onclick="switchTab('list')" class="flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 inactive-tab relative">
+                <i class="fa-solid fa-users text-base"></i>
+                <span>Lista Registrados</span>
+                <span id="counter-badge" class="ml-1 bg-brand-light text-slate-900 font-bold text-xs px-2 py-0.5 rounded-full transition-all">
+                    0
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-3xl mx-auto w-full px-4 pt-6 flex-grow">
+
+        <!-- ================= TAB 1: FORMULARIO ================= -->
+        <section id="view-form" class="space-y-6">
+            <!-- Header/Status Edit Mode Banner -->
+            <div id="edit-banner" class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-pen-to-square text-amber-600 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold text-amber-900 text-sm">Modo Edición Activado</h4>
+                        <p class="text-xs text-amber-700">Actualizando datos de la persona seleccionada.</p>
+                    </div>
+                </div>
+                <button onclick="cancelEdit()" class="text-amber-800 hover:text-amber-950 font-bold text-xs bg-amber-200 px-3 py-1.5 rounded-md">
+                    Cancelar
+                </button>
+            </div>
+
+            <!-- Card Container -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 sm:p-8 transition-all">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <h2 id="form-title" class="text-xl font-bold text-brand-slate flex items-center gap-2">
+                        <i class="fa-solid fa-address-card text-brand-sapphire"></i>
+                        <span>Datos Básicos</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Completa los datos requeridos para registrar a la persona.</p>
+                </div>
+
+                <form id="contact-form" onsubmit="handleFormSubmit(event)" class="space-y-5" autocomplete="off">
+                    <input type="hidden" id="edit-id" value="">
+
+                    <!-- Nombre Field -->
+                    <div>
+                        <label for="nombre" class="block text-xs font-bold uppercase tracking-wider text-brand-slate mb-2">
+                            Nombre <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="nombre" 
+                                required
+                                autocomplete="given-name"
+                                placeholder="Ej. Maria"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-light focus:border-brand-sapphire focus:bg-white text-slate-800 text-base font-medium outline-none transition-all placeholder:text-slate-400"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Apellido Field -->
+                    <div>
+                        <label for="apellido" class="block text-xs font-bold uppercase tracking-wider text-brand-slate mb-2">
+                            Apellido <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-user-tag"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="apellido" 
+                                required
+                                autocomplete="family-name"
+                                placeholder="Ej. Rodríguez"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-light focus:border-brand-sapphire focus:bg-white text-slate-800 text-base font-medium outline-none transition-all placeholder:text-slate-400"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Teléfono Field -->
+                    <div>
+                        <label for="telefono" class="block text-xs font-bold uppercase tracking-wider text-brand-slate mb-2">
+                            Teléfono <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <input 
+                                type="tel" 
+                                id="telefono" 
+                                required
+                                inputmode="tel"
+                                pattern="[0-9\+\-\s\(\)]{7,18}"
+                                title="Por favor ingresa un número de teléfono válido"
+                                placeholder="Ej. 04121234567"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-light focus:border-brand-sapphire focus:bg-white text-slate-800 text-base font-medium outline-none transition-all placeholder:text-slate-400"
+                            >
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Activa automáticamente el teclado numérico en teléfonos móviles.</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-4 flex flex-col sm:flex-row gap-3">
+                        <button 
+                            type="submit" 
+                            id="submit-btn"
+                            class="w-full py-3.5 px-6 rounded-xl bg-brand-sapphire hover:bg-brand-slate active:scale-[0.98] text-white font-bold text-base shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Guardar Registro</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Info Box -->
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3 text-slate-600 text-xs leading-relaxed">
+                <i class="fa-solid fa-circle-info text-brand-light text-base mt-0.5"></i>
+                <p>
+                    Los datos ingresados se almacenan localmente en el almacenamiento interno del navegador de tu teléfono de forma segura.
+                </p>
+            </div>
+        </section>
+
+
+        <!-- ================= TAB 2: LISTA DE PERSONAS ================= -->
+        <section id="view-list" class="space-y-5 hidden">
+
+            <!-- Summary Metrics Cards -->
+            <div class="grid grid-cols-3 gap-2.5">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
+                    <span class="text-xs text-slate-400 font-semibold block uppercase">Total</span>
+                    <span id="stat-total" class="text-xl font-extrabold text-brand-slate">0</span>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 shadow-sm text-center">
+                    <span class="text-xs text-emerald-600 font-semibold block uppercase">Contactados</span>
+                    <span id="stat-contacted" class="text-xl font-extrabold text-emerald-700">0</span>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 shadow-sm text-center">
+                    <span class="text-xs text-orange-600 font-semibold block uppercase">Sin Resp.</span>
+                    <span id="stat-noresponse" class="text-xl font-extrabold text-orange-700">0</span>
+                </div>
+            </div>
+
+            <!-- Search & Filter Bar -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        oninput="renderContactsList()"
+                        placeholder="Buscar por nombre, apellido o teléfono..." 
+                        class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-light focus:bg-white text-slate-800 transition-all placeholder:text-slate-400"
+                    >
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Status Filter Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg font-semibold bg-brand-slate text-white transition-all whitespace-nowrap">
+                        Todos
+                    </button>
+                    <button onclick="setFilter('pending')" id="filter-pending" class="px-3 py-1.5 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all whitespace-nowrap">
+                        Pendientes
+                    </button>
+                    <button onclick="setFilter('contacted')" id="filter-contacted" class="px-3 py-1.5 rounded-lg font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all whitespace-nowrap">
+                        Contactados
+                    </button>
+                    <button onclick="setFilter('noresponse')" id="filter-noresponse" class="px-3 py-1.5 rounded-lg font-semibold bg-orange-100 text-orange-800 hover:bg-orange-200 transition-all whitespace-nowrap">
+                        Sin Respuesta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contacts Cards Container -->
+            <div id="contacts-container" class="space-y-3.5">
+                <!-- Javascript will dynamically inject list here -->
+            </div>
+
+            <!-- Backup & Quick Options Bar -->
+            <div class="pt-4 flex justify-between items-center text-xs text-slate-500 border-t border-slate-200">
+                <button onclick="exportData()" class="text-brand-sapphire font-semibold hover:underline flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> Respaldar Lista
+                </button>
+                <button onclick="confirmClearAll()" class="text-rose-600 font-semibold hover:underline flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Borrar Todo
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Toast Notification -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs sm:text-sm font-semibold px-5 py-3 rounded-xl shadow-2xl z-50 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toast-message">Mensaje de notificación</span>
+    </div>
+
+    <!-- Delete Modal Confirmation -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden transition-opacity">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4 transform transition-all scale-95 opacity-100" id="delete-modal-box">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-bold text-slate-800">¿Eliminar registro?</h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    Esta acción eliminará permanentemente a <span id="delete-name" class="font-bold text-slate-800"></span> de la lista.
+                </p>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all">
+                    Cancelar
+                </button>
+                <button id="confirm-delete-btn" class="flex-1 py-2.5 rounded-xl bg-status-danger text-white text-xs font-bold hover:bg-rose-700 transition-all shadow-sm">
+                    Sí, Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Key for localStorage
+        const STORAGE_KEY = 'ventejoven_lostaques_contacts_v1';
+
+        // Local Storage Helper Functions
+        function getContacts() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.error("Error reading from localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveContacts(contacts) {
+            try {
+                localStorage.getItem;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
+                updateBadgeCount();
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+                showToast("Error al guardar los datos", "error");
+            }
+        }
+
+        // Global State
+        let currentFilter = 'all';
+        let contactToDeleteId = null;
+
+        // UI Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            updateBadgeCount();
+            renderContactsList();
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            const formView = document.getElementById('view-form');
+            const listView = document.getElementById('view-list');
+            const formBtn = document.getElementById('tab-form-btn');
+            const listBtn = document.getElementById('tab-list-btn');
+
+            if (tabName === 'form') {
+                formView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                
+                formBtn.className = "flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 active-tab";
+                listBtn.className = "flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 inactive-tab relative";
+            } else {
+                formView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                
+                listBtn.className = "flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 active-tab relative";
+                formBtn.className = "flex-1 py-3.5 px-2 text-center text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 inactive-tab";
+                
+                renderContactsList();
+            }
+        }
+
+        // Form Submission (Add or Edit)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const nombreInput = document.getElementById('nombre');
+            const apellidoInput = document.getElementById('apellido');
+            const telefonoInput = document.getElementById('telefono');
+            const editIdInput = document.getElementById('edit-id');
+
+            const nombre = nombreInput.value.trim();
+            const apellido = apellidoInput.value.trim();
+            const telefono = telefonoInput.value.trim();
+            const editId = editIdInput.value;
+
+            if (!nombre || !apellido || !telefono) {
+                showToast("Por favor completa todos los campos", "error");
+                return;
+            }
+
+            let contacts = getContacts();
+
+            if (editId) {
+                // Edit existing
+                const index = contacts.findIndex(c => c.id === editId);
+                if (index !== -1) {
+                    contacts[index].nombre = nombre;
+                    contacts[index].apellido = apellido;
+                    contacts[index].telefono = telefono;
+                    contacts[index].updatedAt = new Date().toISOString();
+                    showToast("Persona actualizada correctamente", "success");
+                }
+            } else {
+                // Add new contact
+                const newContact = {
+                    id: 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    nombre: nombre,
+                    apellido: apellido,
+                    telefono: telefono,
+                    status: 'pendiente', // 'pendiente', 'contactado', 'sin_respuesta'
+                    createdAt: new Date().toISOString()
+                };
+                contacts.unshift(newContact);
+                showToast("Persona registrada con éxito", "success");
+            }
+
+            saveContacts(contacts);
+            resetForm();
+            switchTab('list');
+        }
+
+        // Reset form to clean state
+        function resetForm() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('edit-id').value = '';
+            document.getElementById('edit-banner').classList.add('hidden');
+            document.getElementById('form-title').querySelector('span').innerText = "Datos Básicos";
+            document.getElementById('submit-btn').querySelector('span').innerText = "Guardar Registro";
+        }
+
+        // Cancel Edit
+        function cancelEdit() {
+            resetForm();
+            showToast("Edición cancelada", "info");
+        }
+
+        // Edit contact setup
+        function editContact(id) {
+            const contacts = getContacts();
+            const contact = contacts.find(c => c.id === id);
+
+            if (!contact) return;
+
+            document.getElementById('nombre').value = contact.nombre;
+            document.getElementById('apellido').value = contact.apellido;
+            document.getElementById('telefono').value = contact.telefono;
+            document.getElementById('edit-id').value = contact.id;
+
+            document.getElementById('edit-banner').classList.remove('hidden');
+            document.getElementById('form-title').querySelector('span').innerText = "Editar Persona";
+            document.getElementById('submit-btn').querySelector('span').innerText = "Actualizar Cambios";
+
+            switchTab('form');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toggle Status: 'contactado' or 'sin_respuesta'
+        function updateStatus(id, newStatus) {
+            let contacts = getContacts();
+            const index = contacts.findIndex(c => c.id === id);
+
+            if (index !== -1) {
+                // If same status clicked again, revert to 'pendiente'
+                if (contacts[index].status === newStatus) {
+                    contacts[index].status = 'pendiente';
+                    showToast("Estado cambiado a Pendiente", "info");
+                } else {
+                    contacts[index].status = newStatus;
+                    if (newStatus === 'contactado') {
+                        showToast("Marcado como Contactado", "success");
+                    } else if (newStatus === 'sin_respuesta') {
+                        showToast("Marcado como Sin Respuesta", "orange");
+                    }
+                }
+                saveContacts(contacts);
+                renderContactsList();
+            }
+        }
+
+        // Delete Contact Modal Trigger
+        function promptDeleteContact(id, fullName) {
+            contactToDeleteId = id;
+            document.getElementById('delete-name').innerText = fullName;
+            
+            const modal = document.getElementById('delete-modal');
+            modal.classList.remove('hidden');
+            
+            document.getElementById('confirm-delete-btn').onclick = () => {
+                executeDeleteContact();
+            };
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+            contactToDeleteId = null;
+        }
+
+        function executeDeleteContact() {
+            if (!contactToDeleteId) return;
+
+            let contacts = getContacts();
+            contacts = contacts.filter(c => c.id !== contactToDeleteId);
+            saveContacts(contacts);
+
+            closeDeleteModal();
+            showToast("Registro eliminado", "danger");
+            renderContactsList();
+        }
+
+        // Filter setter
+        function setFilter(filterType) {
+            currentFilter = filterType;
+
+            const btnAll = document.getElementById('filter-all');
+            const btnPending = document.getElementById('filter-pending');
+            const btnContacted = document.getElementById('filter-contacted');
+            const btnNoResponse = document.getElementById('filter-noresponse');
+
+            // Reset classes
+            [btnAll, btnPending, btnContacted, btnNoResponse].forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all whitespace-nowrap";
+            });
+
+            if (filterType === 'all') {
+                btnAll.className = "px-3 py-1.5 rounded-lg font-semibold bg-brand-slate text-white transition-all whitespace-nowrap";
+            } else if (filterType === 'pending') {
+                btnPending.className = "px-3 py-1.5 rounded-lg font-semibold bg-slate-700 text-white transition-all whitespace-nowrap";
+            } else if (filterType === 'contacted') {
+                btnContacted.className = "px-3 py-1.5 rounded-lg font-semibold bg-emerald-600 text-white transition-all whitespace-nowrap";
+            } else if (filterType === 'noresponse') {
+                btnNoResponse.className = "px-3 py-1.5 rounded-lg font-semibold bg-status-noresponse text-white transition-all whitespace-nowrap";
+            }
+
+            renderContactsList();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            renderContactsList();
+        }
+
+        // Render Contacts Cards
+        function renderContactsList() {
+            const container = document.getElementById('contacts-container');
+            const contacts = getContacts();
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const clearSearchBtn = document.getElementById('clear-search');
+
+            if (searchVal.length > 0) {
+                clearSearchBtn.classList.remove('hidden');
+            } else {
+                clearSearchBtn.classList.add('hidden');
+            }
+
+            // Update stats
+            const total = contacts.length;
+            const contactedCount = contacts.filter(c => c.status === 'contactado').length;
+            const noResponseCount = contacts.filter(c => c.status === 'sin_respuesta').length;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-contacted').innerText = contactedCount;
+            document.getElementById('stat-noresponse').innerText = noResponseCount;
+
+            // Filter logic
+            let filtered = contacts.filter(c => {
+                const fullName = `${c.nombre} ${c.apellido}`.toLowerCase();
+                const phone = (c.telefono || '').toLowerCase();
+                const matchesSearch = fullName.includes(searchVal) || phone.includes(searchVal);
+
+                if (!matchesSearch) return false;
+
+                if (currentFilter === 'contacted') return c.status === 'contactado';
+                if (currentFilter === 'noresponse') return c.status === 'sin_respuesta';
+                if (currentFilter === 'pending') return c.status === 'pendiente' || !c.status;
+                
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm my-4">
+                        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <i class="fa-solid fa-users-slash"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-700 text-base">No hay personas en esta lista</h4>
+                        <p class="text-xs text-slate-400 mt-1">
+                            ${searchVal ? 'No se encontraron resultados para tu búsqueda.' : 'Anota personas usando la pestaña del formulario.'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(c => {
+                const fullName = `${c.nombre} ${c.apellido}`;
+                const cleanPhone = (c.telefono || '').replace(/[^\d+]/g, '');
+
+                // Status configuration
+                let badgeClass = 'badge-pending';
+                let badgeText = 'Pendiente';
+                let badgeIcon = 'fa-regular fa-clock';
+
+                if (c.status === 'contactado') {
+                    badgeClass = 'badge-contacted';
+                    badgeText = 'Contactado';
+                    badgeIcon = 'fa-solid fa-circle-check';
+                } else if (c.status === 'sin_respuesta') {
+                    badgeClass = 'badge-noresponse';
+                    badgeText = 'Sin Respuesta';
+                    badgeIcon = 'fa-solid fa-phone-slash';
+                }
+
+                html += `
+                    <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                        <!-- Top Header Row -->
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base leading-tight">${fullName}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <a href="tel:${cleanPhone}" class="text-xs font-semibold text-brand-sapphire hover:text-brand-slate flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-lg">
+                                        <i class="fa-solid fa-phone text-xs"></i>
+                                        <span>${c.telefono}</span>
+                                    </a>
+                                    ${cleanPhone ? `
+                                        <a href="https://wa.me/${cleanPhone.replace('+', '')}" target="_blank" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg" title="Enviar WhatsApp">
+                                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${badgeClass}">
+                                <i class="${badgeIcon}"></i>
+                                <span>${badgeText}</span>
+                            </span>
+                        </div>
+
+                        <!-- Action Buttons Row -->
+                        <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <!-- Contactado Button -->
+                            <button 
+                                onclick="updateStatus('${c.id}', 'contactado')"
+                                class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+                                    c.status === 'contactado'
+                                    ? 'bg-status-contacted text-white ring-2 ring-emerald-300'
+                                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white'
+                                }"
+                            >
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Contactado</span>
+                            </button>
+
+                            <!-- Sin Respuesta Button (Distinct Orange-Red) -->
+                            <button 
+                                onclick="updateStatus('${c.id}', 'sin_respuesta')"
+                                class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+                                    c.status === 'sin_respuesta'
+                                    ? 'bg-status-noresponse text-white ring-2 ring-orange-300'
+                                    : 'bg-orange-50 text-orange-800 hover:bg-status-noresponse hover:text-white'
+                                }"
+                            >
+                                <i class="fa-solid fa-phone-slash"></i>
+                                <span>Sin Respuesta</span>
+                            </button>
+
+                            <!-- Modificar Button -->
+                            <button 
+                                onclick="editContact('${c.id}')"
+                                class="py-2 px-2.5 rounded-xl bg-slate-100 hover:bg-brand-sapphire hover:text-white text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                            >
+                                <i class="fa-solid fa-pen"></i>
+                                <span>Modificar</span>
+                            </button>
+
+                            <!-- Eliminar Button (Red) -->
+                            <button 
+                                onclick="promptDeleteContact('${c.id}', '${fullName.replace(/'/g, "\\'")}')"
+                                class="py-2 px-2.5 rounded-xl bg-rose-50 hover:bg-status-danger hover:text-white text-rose-600 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                            >
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update header counter badge
+        function updateBadgeCount() {
+            const contacts = getContacts();
+            const badge = document.getElementById('counter-badge');
+            if (badge) {
+                badge.innerText = contacts.length;
+            }
+        }
+
+        // Toast Feedback System
+        let toastTimeout;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+            } else if (type === 'error' || type === 'danger') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+            } else if (type === 'orange') {
+                toastIcon.className = 'fa-solid fa-phone-slash text-orange-400 text-base';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-brand-light text-base';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Export contacts backup as JSON
+        function exportData() {
+            const contacts = getContacts();
+            if (contacts.length === 0) {
+                showToast("No hay registros para respaldar", "info");
+                return;
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(contacts, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const filename = `VenteJoven_Contactos_${new Date().toISOString().slice(0,10)}.json`;
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast("Respaldo descargado", "success");
+        }
+
+        // Clear all contacts
+        function confirmClearAll() {
+            const contacts = getContacts();
+            if (contacts.length === 0) return;
+
+            if (window.confirm("¿Seguro que deseas vaciar toda la lista de contactos?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateBadgeCount();
+                renderContactsList();
+                showToast("Lista completamente limpiada", "info");
+            }
+        }
+    </script>
+</body>
+</html>
